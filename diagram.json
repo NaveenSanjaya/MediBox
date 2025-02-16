@@ -101,7 +101,8 @@
         "top": 186.35,
         "left": -470.4,
         "attrs": { "value": "1000" }
-      }
+      },
+      { "type": "wokwi-dht22", "id": "dht1", "top": -374.1, "left": -111, "attrs": {} }
     ],
     "connections": [
       [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -169,7 +170,10 @@
       [ "btn2:1.l", "bb2:30t.c", "", [ "$bb" ] ],
       [ "btn2:2.l", "bb2:28t.c", "", [ "$bb" ] ],
       [ "btn2:1.r", "bb2:30b.h", "", [ "$bb" ] ],
-      [ "btn2:2.r", "bb2:28b.h", "", [ "$bb" ] ]
+      [ "btn2:2.r", "bb2:28b.h", "", [ "$bb" ] ],
+      [ "dht1:VCC", "bb1:tp.4", "red", [ "v0" ] ],
+      [ "dht1:GND", "bb1:tn.6", "black", [ "v0" ] ],
+      [ "dht1:SDA", "esp:12", "green", [ "v0" ] ]
     ],
     "dependencies": {}
   }

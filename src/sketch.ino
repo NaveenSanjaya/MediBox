@@ -2,6 +2,8 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <DHTesp.h>
+#include <WiFi.h>
 
 // Define the OLED display parameters
 #define SCREEN_WIDTH 128
@@ -9,12 +11,17 @@
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
+#define NTP_SERVER     "pool.ntp.org"
+#define UTC_OFFSET     0
+#define UTC_OFFSET_DST 0
+
 #define BUZZER 5
 #define LED_1 15
 #define PB_CANCEL 34
 #define PB_OK 32
 #define PB_UP 33
 #define PB_DOWN 35
+#define DHTPIN 12
 
 int days = 0;
 int hours = 0;
@@ -47,6 +54,7 @@ String modes[] = {"1 - Set Time", "2 - Set Alarm 1", "3 - Set Alarm 2", "4 - Dis
 
 // Declear the OLED display object
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+DHTesp dhtSensor;
 
 void setup()
 {
@@ -56,6 +64,8 @@ void setup()
     pinMode(PB_OK, INPUT);
     pinMode(PB_UP, INPUT);
     pinMode(PB_DOWN, INPUT);
+
+    dhtSensor.setup(DHTPIN, DHTesp::DHT22);
 
     // put your setup code here, to run once:
     Serial.begin(9600);
@@ -70,7 +80,20 @@ void setup()
 
     // Show initial display buffer contents on the screen
     display.display();
-    delay(2000); // Pause for 2 seconds
+    delay(500);
+
+    WiFi.begin("Wokwi-GUEST", "", 6);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(250);
+        display.clearDisplay();
+        print_line("Connecting to WiFi", 0, 0, 1);
+    }
+
+    display.clearDisplay();
+    print_line("Connected to WiFi", 0, 0, 2);
+
+    configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
 
     // Clear the buffer
     display.clearDisplay();
@@ -88,6 +111,8 @@ void loop()
         delay(200); // Debounce
         go_to_menu();
     }
+
+    check_temp();
 }
 
 void print_line(String text, int column, int row, int text_size)
@@ -117,26 +142,24 @@ void print_time_now(void)
 void update_time()
 {
 
-    timeNow = millis() / 1000;    // Get the current time in seconds
-    seconds = timeNow - timeLast; // Calculate the time difference
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
 
-    if (seconds >= 60)
-    {
-        minutes += 1;
-        timeLast += 60;
-    }
+    char timeHour[3];
+    strftime(timeHour, 3, "%H", &timeinfo);
+    hours = atoi(timeHour);
 
-    if (minutes >= 60)
-    {
-        hours += 1;
-        minutes = 0;
-    }
+    char timeMinute[3];
+    strftime(timeMinute, 3, "%M", &timeinfo);
+    minutes = atoi(timeMinute);
 
-    if (hours >= 24)
-    {
-        days += 1;
-        hours = 0;
-    }
+    char timeSecond[3]; 
+    strftime(timeSecond, 3, "%S", &timeinfo);
+    seconds = atoi(timeSecond);
+
+    char timeDay[3];
+    strftime(timeDay, 3, "%d", &timeinfo);
+    days = atoi(timeDay);
 }
 
 void ring_alarm()
@@ -432,5 +455,35 @@ void run_mode(int mode)
     else if (mode == 3)
     {
         alarm_enabled = false;
+    }
+}
+
+void check_temp()
+{
+    TempAndHumidity data = dhtSensor.getTempAndHumidity();
+    if (data.temperature > 35)
+    {
+        display.clearDisplay();
+        print_line("TEMP HIGH", 0, 40, 1);
+        delay(1000);
+    }
+    else if (data.temperature < 25)
+    {
+        display.clearDisplay();
+        print_line("TEMP LOW", 0, 40, 1);
+        delay(1000);
+    }
+
+    if (data.humidity > 40)
+    {
+        display.clearDisplay();
+        print_line("HUMIDITY HIGH", 0, 50, 1);
+        delay(1000);
+    }
+    else if (data.humidity < 20)
+    {
+        display.clearDisplay();
+        print_line("HUMIDITY LOW", 0, 50, 1);
+        delay(1000);
     }
 }
