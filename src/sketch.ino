@@ -461,29 +461,60 @@ void run_mode(int mode)
 void check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
-    if (data.temperature > 35)
+
+    // Temperature thresholds: 24°C ≤ Temperature ≤ 32°C
+    if (data.temperature > 32)
     {
         display.clearDisplay();
         print_line("TEMP HIGH", 0, 40, 1);
+        print_line(String(data.temperature, 1) + " C", 0, 30, 1);
+        print_line("Max 32 C", 0, 30, 1);
+        digitalWrite(LED_1, HIGH);
+        tone(BUZZER, notes[0]);
+        delay(500);
+        noTone(BUZZER);
+        digitalWrite(LED_1, LOW);
         delay(1000);
     }
-    else if (data.temperature < 25)
+    else if (data.temperature < 24)
     {
         display.clearDisplay();
         print_line("TEMP LOW", 0, 40, 1);
+        print_line(String(data.temperature, 1) + " C", 0, 30, 1);
+        print_line("Min 24 C", 0, 30, 1);
+        digitalWrite(LED_1, HIGH);
+        tone(BUZZER, notes[2]);
+        delay(500);
+        noTone(BUZZER);
+        digitalWrite(LED_1, LOW);
         delay(1000);
     }
 
-    if (data.humidity > 40)
+    // Humidity thresholds: 65% ≤ Humidity ≤ 80%
+    if (data.humidity > 80)
     {
         display.clearDisplay();
         print_line("HUMIDITY HIGH", 0, 50, 1);
+        print_line(String(data.humidity, 1) + " %", 0, 30, 1);
+        print_line("Max 80 %", 0, 30, 1);
+        digitalWrite(LED_1, HIGH);
+        tone(BUZZER, notes[4]);
+        delay(500);
+        noTone(BUZZER);
+        digitalWrite(LED_1, LOW);
         delay(1000);
     }
-    else if (data.humidity < 20)
+    else if (data.humidity < 65)
     {
         display.clearDisplay();
         print_line("HUMIDITY LOW", 0, 50, 1);
+        print_line(String(data.humidity, 1) + " %", 0, 30, 1);
+        print_line("Min 65 %", 0, 30, 1);
+        digitalWrite(LED_1, HIGH);
+        tone(BUZZER, notes[6]);
+        delay(500);
+        noTone(BUZZER);
+        digitalWrite(LED_1, LOW);
         delay(1000);
     }
 }
