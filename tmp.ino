@@ -11,13 +11,12 @@
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
-#define NTP_SERVER "pool.ntp.org"
-#define UTC_OFFSET 0
+#define NTP_SERVER     "pool.ntp.org"
+#define UTC_OFFSET     0
 #define UTC_OFFSET_DST 0
 
 #define BUZZER 5
 #define LED_1 15
-#define LED_2 2
 #define PB_CANCEL 34
 #define PB_OK 32
 #define PB_UP 33
@@ -51,30 +50,11 @@ int notes[] = {C, D, E, F, G, A, B, C_H};
 
 int current_mode = 0;
 int max_mode = 4;
-String modes[] = {
-    "1 - Set Time Zone",
-    "2 - Set Alarm 1",
-    "3 - Set Alarm 2",
-    "4 - View Alarms",
-    "5 - Delete Alarms",
-    "6 - Disable Alarms"};
+String modes[] = {"1 - Set Time", "2 - Set Alarm 1", "3 - Set Alarm 2", "4 - Disable Alarms"};
 
 // Declear the OLED display object
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 DHTesp dhtSensor;
-
-// Function Declarations
-void print_line(String text, int column, int row, int text_size);
-void print_time_now(void);
-void update_time(void);
-void ring_alarm(void);
-void update_time_with_check_alarm(void);
-int wait_for_button_press();
-void go_to_menu();
-void set_time();
-void set_alarm(int alarm);
-void run_mode(int mode);
-void check_temp();
 
 void setup()
 {
@@ -87,6 +67,7 @@ void setup()
 
     dhtSensor.setup(DHTPIN, DHTesp::DHT22);
 
+    // put your setup code here, to run once:
     Serial.begin(9600);
 
     // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
@@ -99,7 +80,7 @@ void setup()
 
     // Show initial display buffer contents on the screen
     display.display();
-    delay(2000);
+    delay(500);
 
     WiFi.begin("Wokwi-GUEST", "", 6);
     while (WiFi.status() != WL_CONNECTED)
@@ -118,7 +99,6 @@ void setup()
     display.clearDisplay();
 
     print_line("Welcome to Medibox!", 10, 20, 2);
-    delay(500);
     display.clearDisplay();
 }
 
@@ -156,7 +136,7 @@ void print_time_now(void)
     print_line(":", 50, 0, 2);
     print_line(String(minutes), 60, 0, 2);
     print_line(":", 80, 0, 2);
-    print_line(String(seconds), 90, 0, 2);
+    print_line(String(seconds), 80, 0, 2);
 }
 
 void update_time()
@@ -173,7 +153,7 @@ void update_time()
     strftime(timeMinute, 3, "%M", &timeinfo);
     minutes = atoi(timeMinute);
 
-    char timeSecond[3];
+    char timeSecond[3]; 
     strftime(timeSecond, 3, "%S", &timeinfo);
     seconds = atoi(timeSecond);
 
@@ -274,14 +254,14 @@ void go_to_menu()
         int pressed = wait_for_button_press();
         if (pressed == PB_UP)
         {
-            delay(500); // Debounce
+            delay(200); // Debounce
             current_mode += 1;
             current_mode = current_mode % max_mode;
         }
 
         else if (pressed == PB_DOWN)
         {
-            delay(500); // Debounce
+            delay(200); // Debounce
             current_mode -= 1;
             if (current_mode < 0)
             {
@@ -291,12 +271,12 @@ void go_to_menu()
 
         else if (pressed == PB_OK)
         {
-            delay(500); // Debounce
+            delay(200); // Debounce
             run_mode(current_mode);
         }
         else if (pressed == PB_CANCEL)
         {
-            delay(500); // Debounce
+            delay(200); // Debounce
             break;
         }
     }
@@ -496,7 +476,7 @@ void check_temp()
         digitalWrite(LED_1, LOW);
         delay(1000);
     }
-    else if (data.temperature < 20)
+    else if (data.temperature < 24)
     {
         display.clearDisplay();
         print_line("TEMP LOW", 0, 40, 1);
@@ -524,7 +504,7 @@ void check_temp()
         digitalWrite(LED_1, LOW);
         delay(1000);
     }
-    else if (data.humidity < 20)
+    else if (data.humidity < 65)
     {
         display.clearDisplay();
         print_line("HUMIDITY LOW", 0, 50, 1);
