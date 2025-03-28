@@ -139,7 +139,7 @@ void loop()
 }
 
 //
-//
+// Utility Functions
 //
 void print_line(String text, int column, int row, int text_size)
 {
@@ -157,7 +157,8 @@ int wait_for_button_press()
     {
         if (digitalRead(PB_UP) == LOW)
         {
-            delay(200); // Debounce            return PB_UP;
+            delay(200); // Debounce
+            return PB_UP;
         }
         if (digitalRead(PB_DOWN) == LOW)
         {
@@ -180,7 +181,7 @@ int wait_for_button_press()
 }
 
 //
-//
+// Menu Functions
 //
 void go_to_menu()
 {
@@ -259,18 +260,14 @@ void run_mode(int mode)
 }
 
 //
-//
+// Time Functions
 //
 void print_time_now(void)
 {
     display.clearDisplay();
-    print_line(String(days), 0, 0, 2);
-    print_line(":", 20, 0, 2);
-    print_line(String(hours), 30, 0, 2);
-    print_line(":", 50, 0, 2);
-    print_line(String(minutes), 60, 0, 2);
-    print_line(":", 80, 0, 2);
-    print_line(String(seconds), 90, 0, 2);
+    print_line(date, 0, 0, 2); // Display the full date
+    print_line(String(hours) + ":" + String(minutes) + ":" + String(seconds), 0, 20, 2); // Display the time
+    display.display();
 }
 
 void update_time()
@@ -293,6 +290,10 @@ void update_time()
     char timeDay[3];
     strftime(timeDay, 3, "%d", &timeinfo);
     days = atoi(timeDay);
+
+    char fullDate[11];
+    strftime(fullDate, 11, "%d-%m-%Y", &timeinfo);
+    date = String(fullDate);
 }
 
 void update_time_with_check_alarm(void)
@@ -315,9 +316,9 @@ void update_time_with_check_alarm(void)
 
 void set_time_zone()
 {
-    int utc_temp_hour = UTC_OFFSET_HOURS;
-    bool time_set = false; // To stop "Time is Set" being displayed after pushing CANCEL
+    bool time_set = false;
 
+    int utc_temp_hour = UTC_OFFSET_HOURS;
     while (true)
     {
         display.clearDisplay();
@@ -328,19 +329,20 @@ void set_time_zone()
         {
             delay(200);
             utc_temp_hour += 1;
-            utc_temp_hour = utc_temp_hour % 24;
+            if (utc_temp_hour > 14)
+            {
+                utc_temp_hour = -12;
+            }
         }
-
         else if (pressed == PB_DOWN)
         {
             delay(200);
             utc_temp_hour -= 1;
-            if (utc_temp_hour < 0)
+            if (utc_temp_hour < -12)
             {
-                utc_temp_hour = 23;
+                utc_temp_hour = 14;
             }
         }
-
         else if (pressed == PB_OK)
         {
             delay(200);
@@ -348,7 +350,6 @@ void set_time_zone()
             time_set = true;
             break;
         }
-
         else if (pressed == PB_CANCEL)
         {
             delay(200);
@@ -369,7 +370,6 @@ void set_time_zone()
             utc_temp_minute += 1;
             utc_temp_minute = utc_temp_minute % 60;
         }
-
         else if (pressed == PB_DOWN)
         {
             delay(200);
@@ -379,7 +379,6 @@ void set_time_zone()
                 utc_temp_minute = 59;
             }
         }
-
         else if (pressed == PB_OK)
         {
             delay(200);
@@ -387,7 +386,6 @@ void set_time_zone()
             time_set = true;
             break;
         }
-
         else if (pressed == PB_CANCEL)
         {
             delay(200);
@@ -490,7 +488,7 @@ void set_time()
 }
 
 //
-//
+// Alarm Functions
 //
 void set_alarm(int alarm)
 {
@@ -686,7 +684,7 @@ void ring_alarm(void)
 void check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
-    if (data.temperature > 35)
+    if (data.temperature > 100)
     {
         display.clearDisplay();
         print_line("TEMP HIGH", 0, 40, 1);
@@ -695,7 +693,7 @@ void check_temp()
         delay(500);
         digitalWrite(LED_1, LOW);
     }
-    else if (data.temperature < 25)
+    else if (data.temperature < 0)
     {
         display.clearDisplay();
         print_line("TEMP LOW", 0, 40, 1);
@@ -705,7 +703,7 @@ void check_temp()
         delay(500);
         digitalWrite(LED_1, LOW);
     }
-    else if (data.humidity > 40)
+    else if (data.humidity > 100)
     {
         display.clearDisplay();
         print_line("HUMIDITY HIGH", 0, 50, 1);
@@ -714,7 +712,7 @@ void check_temp()
         delay(500);
         digitalWrite(LED_1, LOW);
     }
-    else if (data.humidity < 20)
+    else if (data.humidity < 0)
     {
         display.clearDisplay();
         print_line("HUMIDITY LOW", 0, 50, 1);
