@@ -112,7 +112,6 @@ void setup()
 
     // show the display buffer on the screen. you MUST call display() after
     // drawing commands to make them visible on screen!
-    
 
     WiFi.begin("Wokwi-GUEST", "", 6);
     while (WiFi.status() != WL_CONNECTED)
@@ -288,9 +287,9 @@ void run_mode(int mode)
 //
 void print_time_now(void)
 {
-    display.clearDisplay();                                                       
+    display.clearDisplay();
     print_line_centered(String(hours) + ":" + String(minutes) + ":" + String(seconds), 20, 2); // Display the time
-    print_line_centered(date, 40, 1); // Display the date
+    print_line_centered(date, 40, 1);                                                          // Display the date
     display.display();
 }
 
@@ -331,7 +330,7 @@ void update_time_with_check_alarm(void)
         {
             if (alarm_triggered[i] == false && alarm_hours[i] == hours && alarm_minutes[i] == minutes)
             {
-                ring_alarm(i);
+                ring_alarm();
                 alarm_triggered[i] = true;
             }
         }
@@ -592,7 +591,7 @@ void set_alarm(int alarm)
     }
     display.clearDisplay();
     print_line("Alarm is Set", 0, 0, 2);
-    print_line(String(alarm_hours[alarm]) + ":" + String(alarm_minutes[alarm]), 0, 20, 2);
+    print_line(String(alarm_hours[alarm]) + ":" + String(alarm_minutes[alarm]), 0, 40, 2);
     delay(1000);
 }
 
@@ -667,7 +666,7 @@ void delete_alarm()
     delay(2000);
 }
 
-void ring_alarm(int alarm_index)
+void ring_alarm(void)
 {
     display.clearDisplay();
     print_line("MEDICINE TIME!", 0, 0, 2);
@@ -688,27 +687,27 @@ void ring_alarm(int alarm_index)
             }
             else if (digitalRead(PB_SNOOZE) == LOW)
             {
-                delay(200); // Debounce
+                delay(200);
+                update_time();
 
-                // Add 5 minutes to the snoozed alarm
-                alarm_minutes[alarm_index] += 5;
-                if (alarm_minutes[alarm_index] >= 60)
+                for (int i = 0; i < n_alarms; i++)
                 {
-                    alarm_minutes[alarm_index] -= 60;
-                    alarm_hours[alarm_index] += 1;
-                    if (alarm_hours[alarm_index] >= 24)
+                    if (alarm_hours[i] == hours && alarm_minutes[i] == minutes)
                     {
-                        alarm_hours[alarm_index] = 0; // Wrap around to 0 if it exceeds 23
+                        alarm_minutes[i] += 5;
+                        if (alarm_minutes[i] >= 60)
+                        {
+                            alarm_hours[i] += 1;
+                            alarm_minutes[i] = alarm_minutes[i] % 60;
+                            alarm_hours[i] = alarm_hours[i] % 24;
+                        }
+                        alarm_triggered[i] = false;
                     }
                 }
-
-                // Display snooze message
                 display.clearDisplay();
-                print_line("Snoozed for 5 mins", 0, 0, 2);
+                print_line("Snoozed for 5 minutes", 0, 0, 2);
                 delay(1000);
-                display.clearDisplay();
-
-                break_happened = true; // Exit the alarm loop after snoozing
+                break_happened = true;
                 break;
             }
 
@@ -729,7 +728,7 @@ void ring_alarm(int alarm_index)
 void check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
-    while (data.temperature >32 || data.temperature < 24 || data.humidity > 80 || data.humidity < 65)
+    while (data.temperature > 32 || data.temperature < 24 || data.humidity > 80 || data.humidity < 65)
     {
         if (data.temperature > 32)
         {
@@ -771,5 +770,5 @@ void check_temp()
             delay(1000);
             digitalWrite(LED_2, LOW);
         }
-    }   
+    }
 }
