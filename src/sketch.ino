@@ -338,8 +338,6 @@ void update_time_with_check_alarm(void)
     }
 }
 
-
-
 void set_time_zone()
 {
     bool time_set = false;
