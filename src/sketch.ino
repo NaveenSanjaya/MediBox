@@ -16,11 +16,12 @@
 
 #define BUZZER 5
 #define LED_1 15
+#define LED_2 2
 #define PB_CANCEL 34
 #define PB_DOWN 35
 #define PB_OK 32
 #define PB_UP 33
-#define PB_SNOOZE 14
+#define PB_SNOOZE 25
 #define DHTPIN 12
 
 // Declare Objects
@@ -265,7 +266,7 @@ void run_mode(int mode)
 void print_time_now(void)
 {
     display.clearDisplay();
-    print_line(date, 0, 0, 2); // Display the full date
+    print_line(date, 0, 0, 2);                                                           // Display the full date
     print_line(String(hours) + ":" + String(minutes) + ":" + String(seconds), 0, 20, 2); // Display the time
     display.display();
 }
@@ -568,6 +569,7 @@ void set_alarm(int alarm)
     }
     display.clearDisplay();
     print_line("Alarm is Set", 0, 0, 2);
+    print_line(String(alarm_hours[alarm]) + ":" +  String(alarm_minutes[alarm]), 0, 20, 2);
     delay(1000);
 }
 
