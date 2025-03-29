@@ -310,7 +310,7 @@ void update_time_with_check_alarm(void)
         {
             if (alarm_triggered[i] == false && alarm_hours[i] == hours && alarm_minutes[i] == minutes)
             {
-                ring_alarm();
+                ring_alarm(i);
                 alarm_triggered[i] = true;
             }
         }
@@ -571,7 +571,7 @@ void set_alarm(int alarm)
     }
     display.clearDisplay();
     print_line("Alarm is Set", 0, 0, 2);
-    print_line(String(alarm_hours[alarm]) + ":" +  String(alarm_minutes[alarm]), 0, 20, 2);
+    print_line(String(alarm_hours[alarm]) + ":" + String(alarm_minutes[alarm]), 0, 20, 2);
     delay(1000);
 }
 
@@ -646,9 +646,8 @@ void delete_alarm()
     delay(2000);
 }
 
-void ring_alarm(void)
+void ring_alarm(int alarm_index)
 {
-
     display.clearDisplay();
     print_line("MEDICINE TIME!", 0, 0, 2);
     digitalWrite(LED_1, HIGH);
@@ -668,16 +667,37 @@ void ring_alarm(void)
             }
             else if (digitalRead(PB_SNOOZE) == LOW)
             {
-                delay(200);
-                delay(300000); // 5 minutes
+                delay(200); // Debounce
+
+                // Add 5 minutes to the snoozed alarm
+                alarm_minutes[alarm_index] += 5;
+                if (alarm_minutes[alarm_index] >= 60)
+                {
+                    alarm_minutes[alarm_index] -= 60;
+                    alarm_hours[alarm_index] += 1;
+                    if (alarm_hours[alarm_index] >= 24)
+                    {
+                        alarm_hours[alarm_index] = 0; // Wrap around to 0 if it exceeds 23
+                    }
+                }
+
+                // Display snooze message
+                display.clearDisplay();
+                print_line("Snoozed for 5 mins", 0, 0, 2);
+                delay(1000);
+                display.clearDisplay();
+
+                break_happened = true; // Exit the alarm loop after snoozing
+                break;
             }
-            // Serial.println(notes[i]);
+
             tone(BUZZER, notes[i]);
             delay(500);
             noTone(BUZZER);
             delay(2);
         }
     }
+
     digitalWrite(LED_1, LOW);
     display.clearDisplay();
 }
