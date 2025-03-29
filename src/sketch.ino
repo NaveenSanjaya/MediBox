@@ -83,6 +83,8 @@ void setup()
     // put your setup code here, to run once:
     pinMode(BUZZER, OUTPUT);
     pinMode(LED_1, OUTPUT);
+    pinMode(LED_2, OUTPUT);
+    pinMode(PB_SNOOZE, INPUT);
     pinMode(PB_CANCEL, INPUT);
     pinMode(PB_DOWN, INPUT);
     pinMode(PB_OK, INPUT);
@@ -686,41 +688,40 @@ void ring_alarm(void)
 void check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
-    if (data.temperature > 100)
+    if (data.temperature > 32)
     {
         display.clearDisplay();
-        print_line("TEMP HIGH", 0, 40, 1);
+        print_line("TEMP HIGH", 0, 50, 1);
         print_line(String(data.temperature, 1) + " C", 0, 30, 1);
-        digitalWrite(LED_1, HIGH);
-        delay(500);
-        digitalWrite(LED_1, LOW);
+        digitalWrite(LED_2, HIGH);
+        delay(1000);
+        digitalWrite(LED_2, LOW);
     }
-    else if (data.temperature < 0)
+    else if (data.temperature < 24)
     {
         display.clearDisplay();
-        print_line("TEMP LOW", 0, 40, 1);
-        digitalWrite(LED_1, HIGH);
+        print_line("TEMP LOW", 0, 50, 1);
         print_line(String(data.temperature, 1) + " C", 0, 30, 1);
-        digitalWrite(LED_1, HIGH);
-        delay(500);
-        digitalWrite(LED_1, LOW);
+        digitalWrite(LED_2, HIGH);
+        delay(1000);
+        digitalWrite(LED_2, LOW);
     }
-    else if (data.humidity > 100)
+    else if (data.humidity > 80)
     {
         display.clearDisplay();
         print_line("HUMIDITY HIGH", 0, 50, 1);
         print_line(String(data.humidity, 1) + " %", 0, 30, 1);
-        digitalWrite(LED_1, HIGH);
-        delay(500);
-        digitalWrite(LED_1, LOW);
+        digitalWrite(LED_2, HIGH);
+        delay(1000);
+        digitalWrite(LED_2, LOW);
     }
-    else if (data.humidity < 0)
+    else if (data.humidity < 65)
     {
         display.clearDisplay();
         print_line("HUMIDITY LOW", 0, 50, 1);
         print_line(String(data.humidity, 1) + " %", 0, 30, 1);
-        digitalWrite(LED_1, HIGH);
-        delay(500);
-        digitalWrite(LED_1, LOW);
+        digitalWrite(LED_2, HIGH);
+        delay(1000);
+        digitalWrite(LED_2, LOW);
     }
 }
