@@ -76,7 +76,7 @@ int n_notes = 8;
 
 int current_mode = 0;
 int max_modes = 6;
-String modes[] = {"1 - Set Time Zone", "2 - Set Alarm 1", "3 - Set Alarm 2", "4 - Enable/Disable Alarm", "5 - View Active Alarms", "6 - Delete Alarm"};
+String modes[] = {"1- \nSet Time \nZone", "2- \nSet Alarm 1", "3- \nSet Alarm 2", "4- \nEnable/\nDisable \nAlarm", "5- \nView \nActive \nAlarms", "6- \nDelete \nAlarm"};
 
 void setup()
 {
@@ -104,8 +104,7 @@ void setup()
 
     // show the display buffer on the screen. you MUST call display() after
     // drawing commands to make them visible on screen!
-    display.display();
-    delay(2000);
+    display.clearDisplay();
 
     WiFi.begin("Wokwi-GUEST", "", 6);
     while (WiFi.status() != WL_CONNECTED)
@@ -123,7 +122,9 @@ void setup()
     // clear the buffer
     display.clearDisplay();
 
-    print_line("Welcome to Medibox!", 10, 20, 2);
+    print_line_centered("Welcome", 10, 2);
+    print_line_centered("to Medibox!", 30, 1.5);
+    display.display();
     delay(500);
     display.clearDisplay();
 }
@@ -152,6 +153,20 @@ void print_line(String text, int column, int row, int text_size)
     display.println(text);
 
     display.display();
+}
+
+void print_line_centered(String text, int row, int text_size)
+{
+    int16_t x1, y1;
+    uint16_t w, h;
+
+    display.setTextSize(text_size);
+    display.getTextBounds(text, 0, row, &x1, &y1, &w, &h);
+
+    int column = (SCREEN_WIDTH - w) / 2; // Calculate the center column
+    display.setCursor(column, row);
+    display.setTextColor(SSD1306_WHITE);
+    display.println(text);
 }
 
 int wait_for_button_press()
@@ -191,7 +206,7 @@ void go_to_menu()
     while (digitalRead(PB_CANCEL) == HIGH)
     {
         display.clearDisplay();
-        print_line(modes[current_mode], 0, 0, 2);
+        print_line(modes[current_mode], 0, 0, 1);
 
         int pressed = wait_for_button_press();
         if (pressed == PB_UP)
@@ -267,9 +282,9 @@ void run_mode(int mode)
 //
 void print_time_now(void)
 {
-    display.clearDisplay();
-    print_line(date, 0, 0, 2);                                                           // Display the full date
-    print_line(String(hours) + ":" + String(minutes) + ":" + String(seconds), 0, 20, 2); // Display the time
+    display.clearDisplay();                                                       
+    print_line_centered(String(hours) + ":" + String(minutes) + ":" + String(seconds), 20, 2); // Display the time
+    print_line_centered(date, 40, 1); // Display the date
     display.display();
 }
 
@@ -316,6 +331,8 @@ void update_time_with_check_alarm(void)
         }
     }
 }
+
+
 
 void set_time_zone()
 {
