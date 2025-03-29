@@ -731,40 +731,47 @@ void ring_alarm(int alarm_index)
 void check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
-    if (data.temperature > 32)
+    while (data.temperature >32 || data.temperature < 24 || data.humidity > 80 || data.humidity < 65)
     {
-        display.clearDisplay();
-        print_line("TEMP HIGH", 0, 50, 1);
-        print_line(String(data.temperature, 1) + " C", 0, 30, 1);
-        digitalWrite(LED_2, HIGH);
-        delay(1000);
-        digitalWrite(LED_2, LOW);
-    }
-    else if (data.temperature < 24)
-    {
-        display.clearDisplay();
-        print_line("TEMP LOW", 0, 50, 1);
-        print_line(String(data.temperature, 1) + " C", 0, 30, 1);
-        digitalWrite(LED_2, HIGH);
-        delay(1000);
-        digitalWrite(LED_2, LOW);
-    }
-    else if (data.humidity > 80)
-    {
-        display.clearDisplay();
-        print_line("HUMIDITY HIGH", 0, 50, 1);
-        print_line(String(data.humidity, 1) + " %", 0, 30, 1);
-        digitalWrite(LED_2, HIGH);
-        delay(1000);
-        digitalWrite(LED_2, LOW);
-    }
-    else if (data.humidity < 65)
-    {
-        display.clearDisplay();
-        print_line("HUMIDITY LOW", 0, 50, 1);
-        print_line(String(data.humidity, 1) + " %", 0, 30, 1);
-        digitalWrite(LED_2, HIGH);
-        delay(1000);
-        digitalWrite(LED_2, LOW);
-    }
+        if (data.temperature > 32)
+        {
+            display.clearDisplay();
+            print_line_centered("TEMP HIGH", 20, 1);
+            print_line_centered(String(data.temperature, 1) + " C", 40, 1);
+            display.display();
+            digitalWrite(LED_2, HIGH);
+            delay(1000);
+            digitalWrite(LED_2, LOW);
+        }
+        else if (data.temperature < 24)
+        {
+            display.clearDisplay();
+            print_line_centered("TEMP LOW", 20, 1);
+            print_line_centered(String(data.temperature, 1) + " C", 40, 1);
+            display.display();
+            digitalWrite(LED_2, HIGH);
+            delay(1000);
+            digitalWrite(LED_2, LOW);
+        }
+        else if (data.humidity > 80)
+        {
+            display.clearDisplay();
+            print_line_centered("HUMIDITY HIGH", 20, 1);
+            print_line_centered(String(data.humidity, 1) + " %", 40, 1);
+            display.display();
+            digitalWrite(LED_2, HIGH);
+            delay(1000);
+            digitalWrite(LED_2, LOW);
+        }
+        else if (data.humidity < 65)
+        {
+            display.clearDisplay();
+            print_line_centered("HUMIDITY LOW", 20, 1);
+            print_line_centered(String(data.humidity, 1) + " %", 40, 1);
+            display.display();
+            digitalWrite(LED_2, HIGH);
+            delay(1000);
+            digitalWrite(LED_2, LOW);
+        }
+    }   
 }
