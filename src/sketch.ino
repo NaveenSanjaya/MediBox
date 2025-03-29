@@ -102,30 +102,36 @@ void setup()
             ;
     }
 
-    // show the display buffer on the screen. you MUST call display() after
-    // drawing commands to make them visible on screen!
-    display.clearDisplay();
-
-    WiFi.begin("Wokwi-GUEST", "", 6);
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(250);
-        display.clearDisplay();
-        print_line("Connecting to WiFi", 0, 0, 2);
-    }
-
-    display.clearDisplay();
-    print_line("Connected to WiFi", 0, 0, 2);
-
-    configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
-
-    // clear the buffer
     display.clearDisplay();
 
     print_line_centered("Welcome", 10, 2);
     print_line_centered("to Medibox!", 30, 1.5);
     display.display();
     delay(500);
+    display.clearDisplay();
+
+    // show the display buffer on the screen. you MUST call display() after
+    // drawing commands to make them visible on screen!
+    
+
+    WiFi.begin("Wokwi-GUEST", "", 6);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(250);
+        display.clearDisplay();
+        print_line_centered("Connecting to WiFi", 20, 1);
+        display.display();
+        delay(500);
+    }
+
+    display.clearDisplay();
+    print_line_centered("Connected to WiFi", 20, 1);
+    display.display();
+    delay(500);
+
+    configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
+
+    // clear the buffer
     display.clearDisplay();
 }
 
@@ -206,7 +212,7 @@ void go_to_menu()
     while (digitalRead(PB_CANCEL) == HIGH)
     {
         display.clearDisplay();
-        print_line(modes[current_mode], 0, 0, 1);
+        print_line(modes[current_mode], 0, 0, 2);
 
         int pressed = wait_for_button_press();
         if (pressed == PB_UP)
