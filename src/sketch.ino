@@ -59,8 +59,8 @@ unsigned long timeLast = 0;
 
 bool alarms_enabled = true;
 int n_alarms = 2;
-int alarm_hours[] = {0, 1};
-int alarm_minutes[] = {1, 10};
+int alarm_hours[] = {5, 0};
+int alarm_minutes[] = {45, 0};
 bool alarm_triggered[] = {false, false};
 
 int C = 262;
@@ -76,7 +76,7 @@ int n_notes = 8;
 
 int current_mode = 0;
 int max_modes = 6;
-String modes[] = {"1- \nSet Time \nZone", "2- \nSet Alarm 1", "3- \nSet Alarm 2", "4- \nEnable/\nDisable \nAlarm", "5- \nView \nActive \nAlarms", "6- \nDelete \nAlarm"};
+String modes[] = {"1- \nSet Time \nZone", "2- \nSet Alarm 1", "3- \nSet Alarm 2", "4- \nEnable/\nDisable \nAlarms", "5- \nView \nActive \nAlarms", "6- \nDelete \nAlarms"};
 
 void setup()
 {
@@ -288,8 +288,8 @@ void run_mode(int mode)
 void print_time_now(void)
 {
     display.clearDisplay();
-    print_line_centered(String(hours) + ":" + String(minutes) + ":" + String(seconds), 20, 2); // Display the time
-    print_line_centered(date, 40, 1);                                                          // Display the date
+    print_line_centered(String(hours) + ":" + String(minutes) + ":" + String(seconds), 0, 2); // Display the time
+    print_line_centered(date, 20, 1);                                                          // Display the date
     display.display();
 }
 
@@ -331,7 +331,7 @@ void update_time_with_check_alarm(void)
             if (alarm_triggered[i] == false && alarm_hours[i] == hours && alarm_minutes[i] == minutes)
             {
                 ring_alarm();
-                alarm_triggered[i] = true;
+                // alarm_triggered[i] = true;
             }
         }
     }
@@ -422,8 +422,10 @@ void set_time_zone()
     display.clearDisplay();
     if (time_set == true)
     {
-        print_line("Time Zone is Set", 0, 0, 2);
-        delay(1000);
+        print_line_centered("Time Zone is set to", 20, 1);
+        print_line_centered("UTC: " + String(UTC_OFFSET_HOURS) + ":" + String(UTC_OFFSET_MINUTES), 40, 1);
+        display.display();
+        delay(2000);
     }
 }
 
@@ -683,6 +685,7 @@ void ring_alarm(void)
             {
                 delay(200);
                 break_happened = true;
+                alarm_triggered[i] = true; // Reset the triggered flag for this alarm
                 break;
             }
             else if (digitalRead(PB_SNOOZE) == LOW)
@@ -694,7 +697,7 @@ void ring_alarm(void)
                 {
                     if (alarm_hours[i] == hours && alarm_minutes[i] == minutes)
                     {
-                        alarm_minutes[i] += 5;
+                        alarm_minutes[i] += 1;
                         if (alarm_minutes[i] >= 60)
                         {
                             alarm_hours[i] += 1;
@@ -705,8 +708,9 @@ void ring_alarm(void)
                     }
                 }
                 display.clearDisplay();
-                print_line("Snoozed for 5 minutes", 0, 0, 2);
+                print_line("Snoozed for 1 minutes", 0, 0, 2);
                 delay(1000);
+                
                 break_happened = true;
                 break;
             }
@@ -728,47 +732,46 @@ void ring_alarm(void)
 void check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
-    while (data.temperature > 32 || data.temperature < 24 || data.humidity > 80 || data.humidity < 65)
+    display.clearDisplay();
+    print_time_now();
+    if (data.temperature > 32)
     {
-        if (data.temperature > 32)
-        {
-            display.clearDisplay();
-            print_line_centered("TEMP HIGH", 20, 1);
-            print_line_centered(String(data.temperature, 1) + " C", 40, 1);
-            display.display();
-            digitalWrite(LED_2, HIGH);
-            delay(1000);
-            digitalWrite(LED_2, LOW);
-        }
-        else if (data.temperature < 24)
-        {
-            display.clearDisplay();
-            print_line_centered("TEMP LOW", 20, 1);
-            print_line_centered(String(data.temperature, 1) + " C", 40, 1);
-            display.display();
-            digitalWrite(LED_2, HIGH);
-            delay(1000);
-            digitalWrite(LED_2, LOW);
-        }
-        else if (data.humidity > 80)
-        {
-            display.clearDisplay();
-            print_line_centered("HUMIDITY HIGH", 20, 1);
-            print_line_centered(String(data.humidity, 1) + " %", 40, 1);
-            display.display();
-            digitalWrite(LED_2, HIGH);
-            delay(1000);
-            digitalWrite(LED_2, LOW);
-        }
-        else if (data.humidity < 65)
-        {
-            display.clearDisplay();
-            print_line_centered("HUMIDITY LOW", 20, 1);
-            print_line_centered(String(data.humidity, 1) + " %", 40, 1);
-            display.display();
-            digitalWrite(LED_2, HIGH);
-            delay(1000);
-            digitalWrite(LED_2, LOW);
-        }
+        // display.clearDisplay();
+        print_line_centered("TEMP HIGH", 40, 1);
+        print_line_centered(String(data.temperature, 1) + " C", 50, 1);
+        display.display();
+        digitalWrite(LED_2, HIGH);
+        delay(500);
+        digitalWrite(LED_2, LOW);
+    }
+    else if (data.temperature < 24)
+    {
+        // display.clearDisplay();
+        print_line_centered("TEMP LOW", 40, 1);
+        print_line_centered(String(data.temperature, 1) + " C", 50, 1);
+        display.display();
+        digitalWrite(LED_2, HIGH);
+        delay(500);
+        digitalWrite(LED_2, LOW);
+    }
+    else if (data.humidity > 80)
+    {
+        // display.clearDisplay();
+        print_line_centered("HUMIDITY HIGH", 40, 1);
+        print_line_centered(String(data.humidity, 1) + " %", 50, 1);
+        display.display();
+        digitalWrite(LED_2, HIGH);
+        delay(500);
+        digitalWrite(LED_2, LOW);
+    }
+    else if (data.humidity < 65)
+    {
+        // display.clearDisplay();
+        print_line_centered("HUMIDITY LOW", 40, 1);
+        print_line_centered(String(data.humidity, 1) + " %", 50, 1);
+        display.display();
+        digitalWrite(LED_2, HIGH);
+        delay(500);
+        digitalWrite(LED_2, LOW);
     }
 }
