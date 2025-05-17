@@ -1,5 +1,335 @@
 [
     {
+        "id": "e4e49d874b2570e4",
+        "type": "tab",
+        "label": "MEDIBOX",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "145dfd788ccb66b8",
+        "type": "ui_slider",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "label": "Sampling Interval",
+        "tooltip": "",
+        "group": "lightGroup",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "/Medibox/ts",
+        "topicType": "msg",
+        "min": "1",
+        "max": "60",
+        "step": 1,
+        "className": "",
+        "x": 430,
+        "y": 460,
+        "wires": [
+            [
+                "898846893a951671"
+            ]
+        ]
+    },
+    {
+        "id": "2cf2ad28aed48a0c",
+        "type": "ui_slider",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "label": "Sending Interval",
+        "tooltip": "",
+        "group": "lightGroup",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "/Medibox/tu",
+        "topicType": "msg",
+        "min": "10",
+        "max": "300",
+        "step": 1,
+        "className": "",
+        "x": 420,
+        "y": 520,
+        "wires": [
+            [
+                "525e04c13155afaf"
+            ]
+        ]
+    },
+    {
+        "id": "8a34ee9a24d5007f",
+        "type": "ui_gauge",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "group": "lightGroup",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Light Intensity",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 840,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "dd81adeca4147639",
+        "type": "ui_chart",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "group": "lightGroup",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Light Intensity",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "cubic",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": true,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 840,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "027e96f4d6cc5c02",
+        "type": "mqtt in",
+        "z": "e4e49d874b2570e4",
+        "name": "MQTT IN",
+        "topic": "medibox/sensor_data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "bd1ee9b8e875252e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 160,
+        "wires": [
+            [
+                "6ec1929ed6c77e2d",
+                "01d6aee09d39865c",
+                "213b58037a1d3a43"
+            ]
+        ]
+    },
+    {
+        "id": "a8c6e8cc993b8df4",
+        "type": "mqtt out",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "bd1ee9b8e875252e",
+        "x": 1170,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "9e44fadd84c29523",
+        "type": "ui_slider",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "label": "θ offset (min angle)",
+        "tooltip": "",
+        "group": "servoGroup",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "/Medibox/thetaoffset",
+        "topicType": "msg",
+        "min": "0",
+        "max": "120",
+        "step": 1,
+        "className": "",
+        "x": 150,
+        "y": 740,
+        "wires": [
+            [
+                "f5e544f3f7e75545"
+            ]
+        ]
+    },
+    {
+        "id": "85cc9ee99c298d5a",
+        "type": "ui_slider",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "label": "γ (control factor)",
+        "tooltip": "",
+        "group": "servoGroup",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "/Medibox/gamma",
+        "topicType": "msg",
+        "min": "0.0",
+        "max": "1.0",
+        "step": "0.01",
+        "className": "",
+        "x": 140,
+        "y": 820,
+        "wires": [
+            [
+                "fcbb35daf2d1030a"
+            ]
+        ]
+    },
+    {
+        "id": "30e434b61ed2cb8d",
+        "type": "ui_slider",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "label": "T_med (ideal temp)",
+        "tooltip": "",
+        "group": "servoGroup",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "/Medibox/Tmed",
+        "topicType": "msg",
+        "min": "10",
+        "max": "40",
+        "step": 1,
+        "className": "",
+        "x": 150,
+        "y": 900,
+        "wires": [
+            [
+                "a9ef12864348c65a"
+            ]
+        ]
+    },
+    {
+        "id": "6ec1929ed6c77e2d",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "mediboxStatus",
+        "func": "let temperature = msg.payload.temperature;\nlet humidity = msg.payload.humidity;\nlet lightIntensity = msg.payload.intensity;\n\nreturn [\n    {payload: temperature},\n    {payload: humidity},\n    {payload: lightIntensity}\n];",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 160,
+        "wires": [
+            [
+                "4c209dc705981f49",
+                "cd3602144362bea9"
+            ],
+            [
+                "9c83245baa582156",
+                "bbd8d81ddcf9ba02"
+            ],
+            [
+                "8a34ee9a24d5007f",
+                "dd81adeca4147639"
+            ]
+        ]
+    },
+    {
+        "id": "01d6aee09d39865c",
+        "type": "debug",
+        "z": "e4e49d874b2570e4",
+        "name": "Sensor Data",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 330,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "4c209dc705981f49",
+        "type": "ui_gauge",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "group": "c4e1a582bb2ccbd7",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "donut",
+        "title": "Temperature",
+        "label": "℃",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#e6b500",
+            "#00b500",
+            "#ca3838"
+        ],
+        "seg1": "24",
+        "seg2": "32",
+        "diff": false,
+        "className": "",
+        "x": 850,
+        "y": 40,
+        "wires": []
+    },
+    {
         "id": "9c83245baa582156",
         "type": "ui_gauge",
         "z": "e4e49d874b2570e4",
@@ -26,6 +356,469 @@
         "x": 840,
         "y": 160,
         "wires": []
+    },
+    {
+        "id": "cd3602144362bea9",
+        "type": "ui_chart",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "group": "c4e1a582bb2ccbd7",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "Temperature Plot",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "cubic",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": true,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 870,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bbd8d81ddcf9ba02",
+        "type": "ui_chart",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "group": "de57fe026be6f253",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "Humidity Plot",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "cubic",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": true,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 850,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c7a15c2b82dc3d34",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "servoAngle",
+        "func": "// Get current values\nlet I = Number(flow.get(\"intensity\")) || 0;\nlet T = Number(flow.get(\"temperature\")) || 25;\nlet thetaoffset = Number(flow.get(\"thetaoffset\")) || 30;\nlet gamma = Number(flow.get(\"gamma\")) || 0.75;\nlet Tmed = Number(flow.get(\"Tmed\")) || 30;\nlet ts = Number(flow.get(\"ts\")) || 5;\nlet tu = Number(flow.get(\"tu\")) || 120;\n\n// Ensure safe values\nts = Math.max(1, ts);\ntu = Math.max(1, tu);\nTmed = Tmed === 0 ? 1 : Tmed;\n\n// Calculate angle\nlet lnRatio = Math.log(ts / tu);\nlet theta = thetaoffset + (180 - thetaoffset) * I * gamma * lnRatio * (T / Tmed);\ntheta = Math.max(0, Math.min(180, theta));\n\n// Get last sent angle\nlet lastTheta = flow.get(\"lastTheta\") || -1;\n\n// Only send if angle changed significantly (e.g., > 1 degree)\nif (Math.abs(theta - lastTheta) >= 1) {\n    flow.set(\"lastTheta\", theta);\n    return {\n        topic: \"/Medibox/servo_angle\",\n        payload: theta\n    };\n}\n\n// Otherwise, do not send anything\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 790,
+        "y": 760,
+        "wires": [
+            [
+                "a8c6e8cc993b8df4",
+                "1d6d0b8456efa49d",
+                "49a0830200a7ebd7"
+            ]
+        ]
+    },
+    {
+        "id": "213b58037a1d3a43",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "envVariables",
+        "func": "flow.set(\"intensity\", msg.payload.intensity);\nflow.set(\"temperature\", msg.payload.temperature);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 620,
+        "wires": [
+            [
+                "c7a15c2b82dc3d34"
+            ]
+        ]
+    },
+    {
+        "id": "1d6d0b8456efa49d",
+        "type": "debug",
+        "z": "e4e49d874b2570e4",
+        "name": "Angle",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1030,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "8ded0250db072aca",
+        "type": "ui_text_input",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "label": "Servo Angle",
+        "tooltip": "",
+        "group": "servoGroup",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "payload",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 1190,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "49a0830200a7ebd7",
+        "type": "change",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "angle",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 980,
+        "y": 860,
+        "wires": [
+            [
+                "8ded0250db072aca"
+            ]
+        ]
+    },
+    {
+        "id": "f5e544f3f7e75545",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "thetaOffset",
+        "func": "flow.set(\"thetaoffset\", msg.payload);\nreturn { payload: \"\" };\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 740,
+        "wires": [
+            [
+                "c7a15c2b82dc3d34"
+            ]
+        ]
+    },
+    {
+        "id": "a9ef12864348c65a",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "tMed",
+        "func": "flow.set(\"Tmed\", msg.payload);\nreturn { payload: \"\" };\n\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 900,
+        "wires": [
+            [
+                "c7a15c2b82dc3d34"
+            ]
+        ]
+    },
+    {
+        "id": "fcbb35daf2d1030a",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "gamma",
+        "func": "flow.set(\"gamma\", msg.payload);\nreturn { payload: \"\" };\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 820,
+        "wires": [
+            [
+                "c7a15c2b82dc3d34"
+            ]
+        ]
+    },
+    {
+        "id": "898846893a951671",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "ts",
+        "func": "flow.set(\"ts\", msg.payload);\nreturn {\n    topic: \"/Medibox/ts\",\n    payload: msg.payload\n};\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 460,
+        "wires": [
+            [
+                "c7a15c2b82dc3d34",
+                "3dcd38db802c38a6"
+            ]
+        ]
+    },
+    {
+        "id": "525e04c13155afaf",
+        "type": "function",
+        "z": "e4e49d874b2570e4",
+        "name": "tu",
+        "func": "flow.set(\"tu\", msg.payload);\nreturn {\n    topic: \"/Medibox/tu\",\n    payload: msg.payload\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 520,
+        "wires": [
+            [
+                "c7a15c2b82dc3d34",
+                "4eb9633daa708f6a"
+            ]
+        ]
+    },
+    {
+        "id": "3dcd38db802c38a6",
+        "type": "rbe",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "payload",
+        "topi": "topic",
+        "x": 890,
+        "y": 440,
+        "wires": [
+            [
+                "a8c6e8cc993b8df4"
+            ]
+        ]
+    },
+    {
+        "id": "4eb9633daa708f6a",
+        "type": "rbe",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "payload",
+        "topi": "topic",
+        "x": 890,
+        "y": 520,
+        "wires": [
+            [
+                "a8c6e8cc993b8df4"
+            ]
+        ]
+    },
+    {
+        "id": "8f35fc23627ec2a8",
+        "type": "ui_spacer",
+        "z": "e4e49d874b2570e4",
+        "name": "spacer",
+        "group": "c4e1a582bb2ccbd7",
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "7fd17e2d1827df2f",
+        "type": "ui_spacer",
+        "z": "e4e49d874b2570e4",
+        "name": "spacer",
+        "group": "de57fe026be6f253",
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "2509468830476806",
+        "type": "ui_spacer",
+        "z": "e4e49d874b2570e4",
+        "name": "spacer",
+        "group": "servoGroup",
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "edecbde8a84886e7",
+        "type": "ui_spacer",
+        "z": "e4e49d874b2570e4",
+        "name": "spacer",
+        "group": "servoGroup",
+        "order": 4,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "e9c9718f6dad8b22",
+        "type": "ui_spacer",
+        "z": "e4e49d874b2570e4",
+        "name": "spacer",
+        "group": "servoGroup",
+        "order": 6,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "ef87cf99d534a56b",
+        "type": "ui_spacer",
+        "z": "e4e49d874b2570e4",
+        "name": "spacer",
+        "group": "servoGroup",
+        "order": 7,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "lightGroup",
+        "type": "ui_group",
+        "name": "Light Monitoring",
+        "tab": "mediboxTab",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "bd1ee9b8e875252e",
+        "type": "mqtt-broker",
+        "name": "Mosquitto Server",
+        "broker": "test.mosquitto.org",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "servoGroup",
+        "type": "ui_group",
+        "name": "Servo Control",
+        "tab": "mediboxTab",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "c4e1a582bb2ccbd7",
+        "type": "ui_group",
+        "name": "Temperature",
+        "tab": "mediboxTab",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
     },
     {
         "id": "de57fe026be6f253",
