@@ -1,0 +1,50 @@
+[
+    {
+        "id": "9c83245baa582156",
+        "type": "ui_gauge",
+        "z": "e4e49d874b2570e4",
+        "name": "",
+        "group": "de57fe026be6f253",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "wave",
+        "title": "Humidity",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#e6b500",
+            "#00b500",
+            "#ca3838"
+        ],
+        "seg1": "65",
+        "seg2": "80",
+        "diff": false,
+        "className": "",
+        "x": 840,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "de57fe026be6f253",
+        "type": "ui_group",
+        "name": "Humidity",
+        "tab": "mediboxTab",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "mediboxTab",
+        "type": "ui_tab",
+        "name": "Medibox",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]
