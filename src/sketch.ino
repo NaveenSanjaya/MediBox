@@ -6,6 +6,7 @@
 #include <WiFi.h>
 
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 // Define OLED parameters
 #define SCREEN_WIDTH 128
@@ -22,9 +23,11 @@
 #define PB_CANCEL 34
 #define PB_DOWN 35
 #define PB_OK 32
-#define PB_UP 33
+#define PB_UP 26
 #define PB_SNOOZE 25
 #define DHTPIN 12
+
+#define LDR 33
 
 #define MQTT_SERVER "test.mosquitto.org"
 #define MQTT_PORT 1883
@@ -50,9 +53,9 @@ void run_mode(int mode);
 void view_active_alarms();
 void delete_alarm();
 void enable_disable_alarms();
-float check_temp(void);
 void mqttCallback(char *topic, byte *payload, unsigned int length);
 void connectToMQTT();
+void publishData(float temperature, float humidity);
 
 // Global Variables
 int days = 0;
@@ -89,6 +92,12 @@ int current_mode = 0;
 int max_modes = 6;
 String modes[] = {"1- \nSet Time \nZone", "2- \nSet Alarm 1", "3- \nSet Alarm 2", "4- \nEnable/\nDisable \nAlarms", "5- \nView \nActive \nAlarms", "6- \nDelete \nAlarms"};
 
+struct TempHum
+{
+    float temperature;
+    float humidity;
+};
+
 void setup()
 {
     // put your setup code here, to run once:
@@ -100,6 +109,7 @@ void setup()
     pinMode(PB_DOWN, INPUT);
     pinMode(PB_OK, INPUT);
     pinMode(PB_UP, INPUT);
+    pinMode(LDR, INPUT);
 
     dhtSensor.setup(DHTPIN, DHTesp::DHT22);
 
@@ -166,7 +176,9 @@ void loop()
         delay(200);
         go_to_menu();
     }
-    check_temp();
+
+    TempHum th = check_temp();
+    publishData(th.temperature, th.humidity);
 }
 
 //
@@ -752,7 +764,7 @@ void ring_alarm(void)
 //
 //  Temperature and Humidity Functions
 //
-float check_temp()
+TempHum check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
     display.clearDisplay();
@@ -798,40 +810,57 @@ float check_temp()
         digitalWrite(LED_2, LOW);
     }
 
-    float temperature = data.temperature;
-    return temperature;
+    TempHum result;
+    result.temperature = data.temperature;
+    result.humidity = data.humidity;
+    return result;
+}
 
-    //
-    // MQTT Functions
-    //
-    void connectToMQTT()
+//
+// MQTT Functions
+//
+void connectToMQTT()
+{
+    while (!mqttclient.connected())
     {
-        while (!mqttclient.connected())
+        Serial.print("Attempting MQTT connection...");
+        if (mqttclient.connect("ESP32Client-123456"))
         {
-            Serial.print("Attempting MQTT connection...");
-            if (mqttclient.connect("ESP32Client-123456"))
-            {
-                Serial.println("connected");
-                mqttclient.subscribe("test/topic");
-            }
-            else
-            {
-                Serial.print("failed, rc=");
-                Serial.print(mqttclient.state());
-                delay(5000);
-            }
+            Serial.println("connected");
+            mqttclient.subscribe("test/topic");
+        }
+        else
+        {
+            Serial.print("failed, rc=");
+            Serial.print(mqttclient.state());
+            delay(5000);
         }
     }
+}
 
-    void mqttCallback(char *topic, byte *payload, unsigned int length)
+void mqttCallback(char *topic, byte *payload, unsigned int length)
+{
+    String msg;
+    for (int i = 0; i < length; i++)
     {
-        String msg;
-        for (int i = 0; i < length; i++)
-        {
-            msg += (char)payload[i];
-        }
-        Serial.print("Message arrived [");
-        Serial.print(topic);
-        Serial.print("]: ");
-        Serial.println(msg);
+        msg += (char)payload[i];
     }
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.print("]: ");
+    Serial.println(msg);
+}
+
+void publishData(float temperature, float humidity)
+{
+    JsonDocument doc;
+
+    doc["temperature"] = temperature;
+    doc["humidity"] = humidity;
+    doc["ldr"] = analogRead(LDR);
+
+    String jsonString;
+    serializeJson(doc, jsonString);
+    Serial.println(jsonString);
+    mqttclient.publish("medibox/sensor_data", jsonString.c_str());
+}
