@@ -848,14 +848,10 @@ TempHum check_temp()
 void sampleLDR()
 {
     int raw = analogRead(LDR);        // 0 - 4095
-    float norm = (float)raw / 4095.0; // normalize to 0 - 1
+    float norm = 1.0 - ((float)raw / 4095.0); // normalize to 0 - 1
     lightSum += norm;
     sampleCount++;
 }
-
-//
-// Servo Functions
-//
 
 //
 // MQTT Functions
