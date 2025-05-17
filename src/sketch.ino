@@ -5,6 +5,8 @@
 #include <DHTesp.h>
 #include <WiFi.h>
 
+#include <PubSubClient.h>
+
 // Define OLED parameters
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -24,9 +26,15 @@
 #define PB_SNOOZE 25
 #define DHTPIN 12
 
+#define MQTT_SERVER "test.mosquitto.org"
+#define MQTT_PORT 1883
+
 // Declare Objects
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 DHTesp dhtSensor;
+
+WiFiClient espClient;
+PubSubClient mqttclient(espClient);
 
 // Function Declarations
 void print_line(String text, int column, int row, int text_size);
@@ -39,9 +47,12 @@ void set_time();
 void set_time_zone();
 void set_alarm(int alarm);
 void run_mode(int mode);
-void check_temp();
 void view_active_alarms();
 void delete_alarm();
+void enable_disable_alarms();
+float check_temp(void);
+void mqttCallback(char *topic, byte *payload, unsigned int length);
+void connectToMQTT();
 
 // Global Variables
 int days = 0;
@@ -59,8 +70,8 @@ unsigned long timeLast = 0;
 
 bool alarms_enabled = true;
 int n_alarms = 2;
-int alarm_hours[] = {5, 0};
-int alarm_minutes[] = {45, 0};
+int alarm_hours[] = {8, 13};
+int alarm_minutes[] = {40, 0};
 bool alarm_triggered[] = {false, false};
 
 int C = 262;
@@ -128,6 +139,10 @@ void setup()
     display.display();
     delay(500);
 
+    // Connect to MQTT broker
+    mqttclient.setServer(MQTT_SERVER, MQTT_PORT);
+    mqttclient.setCallback(mqttCallback);
+
     configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
 
     // clear the buffer
@@ -137,6 +152,13 @@ void setup()
 void loop()
 {
     // put your main code here, to run repeatedly:
+
+    if (!mqttclient.connected())
+    {
+        connectToMQTT();
+    }
+    mqttclient.loop();
+
     update_time_with_check_alarm();
 
     if (digitalRead(PB_OK) == LOW)
@@ -289,7 +311,7 @@ void print_time_now(void)
 {
     display.clearDisplay();
     print_line_centered(String(hours) + ":" + String(minutes) + ":" + String(seconds), 0, 2); // Display the time
-    print_line_centered(date, 20, 1);                                                          // Display the date
+    print_line_centered(date, 20, 1);                                                         // Display the date
     display.display();
 }
 
@@ -330,6 +352,7 @@ void update_time_with_check_alarm(void)
         {
             if (alarm_triggered[i] == false && alarm_hours[i] == hours && alarm_minutes[i] == minutes)
             {
+                alarm_triggered[i] = true;
                 ring_alarm();
                 // alarm_triggered[i] = true;
             }
@@ -628,7 +651,7 @@ void delete_alarm()
     while (true)
     {
         display.clearDisplay();
-        print_line("Enter Specific Alarm to Delete: " + String(alarm_to_delete + 1), 0, 0, 2);
+        print_line("Enter Alarm to Delete: " + String(alarm_to_delete + 1), 0, 0, 2);
 
         int pressed = wait_for_button_press();
 
@@ -685,7 +708,7 @@ void ring_alarm(void)
             {
                 delay(200);
                 break_happened = true;
-                alarm_triggered[i] = true; // Reset the triggered flag for this alarm
+                // alarm_triggered[i] = true; // Reset the triggered flag for this alarm
                 break;
             }
             else if (digitalRead(PB_SNOOZE) == LOW)
@@ -710,7 +733,7 @@ void ring_alarm(void)
                 display.clearDisplay();
                 print_line("Snoozed for 1 minutes", 0, 0, 2);
                 delay(1000);
-                
+
                 break_happened = true;
                 break;
             }
@@ -729,7 +752,7 @@ void ring_alarm(void)
 //
 //  Temperature and Humidity Functions
 //
-void check_temp()
+float check_temp()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
     display.clearDisplay();
@@ -774,4 +797,41 @@ void check_temp()
         delay(500);
         digitalWrite(LED_2, LOW);
     }
-}
+
+    float temperature = data.temperature;
+    return temperature;
+
+    //
+    // MQTT Functions
+    //
+    void connectToMQTT()
+    {
+        while (!mqttclient.connected())
+        {
+            Serial.print("Attempting MQTT connection...");
+            if (mqttclient.connect("ESP32Client-123456"))
+            {
+                Serial.println("connected");
+                mqttclient.subscribe("test/topic");
+            }
+            else
+            {
+                Serial.print("failed, rc=");
+                Serial.print(mqttclient.state());
+                delay(5000);
+            }
+        }
+    }
+
+    void mqttCallback(char *topic, byte *payload, unsigned int length)
+    {
+        String msg;
+        for (int i = 0; i < length; i++)
+        {
+            msg += (char)payload[i];
+        }
+        Serial.print("Message arrived [");
+        Serial.print(topic);
+        Serial.print("]: ");
+        Serial.println(msg);
+    }
