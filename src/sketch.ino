@@ -7,6 +7,7 @@
 
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <ESP32Servo.h>
 
 // Define OLED parameters
 #define SCREEN_WIDTH 128
@@ -28,6 +29,7 @@
 #define DHTPIN 12
 
 #define LDR 33
+#define SERVO 14
 
 #define MQTT_SERVER "test.mosquitto.org"
 #define MQTT_PORT 1883
@@ -35,6 +37,7 @@
 // Declare Objects
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 DHTesp dhtSensor;
+Servo servo;
 
 WiFiClient espClient;
 PubSubClient mqttclient(espClient);
@@ -88,6 +91,15 @@ int C_H = 523;
 int notes[] = {C, D, E, F, G, A, B, C_H};
 int n_notes = 8;
 
+unsigned long lastSampleTime = 0;
+unsigned long lastSendTime = 0;
+
+float lightSum = 0;
+int sampleCount = 0;
+
+int ts = 5;  // sampling interval (in seconds)
+int tu = 10; // sending interval (in seconds)
+
 int current_mode = 0;
 int max_modes = 6;
 String modes[] = {"1- \nSet Time \nZone", "2- \nSet Alarm 1", "3- \nSet Alarm 2", "4- \nEnable/\nDisable \nAlarms", "5- \nView \nActive \nAlarms", "6- \nDelete \nAlarms"};
@@ -112,6 +124,7 @@ void setup()
     pinMode(LDR, INPUT);
 
     dhtSensor.setup(DHTPIN, DHTesp::DHT22);
+    servo.attach(SERVO);
 
     Serial.begin(9600);
 
@@ -177,8 +190,21 @@ void loop()
         go_to_menu();
     }
 
+    unsigned long now = millis();
+
+    if (now - lastSampleTime >= ts * 1000)
+    {
+        sampleLDR();
+        lastSampleTime = now;
+    }
+
     TempHum th = check_temp();
-    publishData(th.temperature, th.humidity);
+
+    if (now - lastSendTime >= tu * 1000)
+    {
+        publishData(th.temperature, th.humidity);
+        lastSendTime = now;
+    }
 }
 
 //
@@ -817,6 +843,21 @@ TempHum check_temp()
 }
 
 //
+// LDR Functions
+//
+void sampleLDR()
+{
+    int raw = analogRead(LDR);        // 0 - 4095
+    float norm = (float)raw / 4095.0; // normalize to 0 - 1
+    lightSum += norm;
+    sampleCount++;
+}
+
+//
+// Servo Functions
+//
+
+//
 // MQTT Functions
 //
 void connectToMQTT()
@@ -827,7 +868,9 @@ void connectToMQTT()
         if (mqttclient.connect("ESP32Client-123456"))
         {
             Serial.println("connected");
-            mqttclient.subscribe("test/topic");
+            mqttclient.subscribe("/Medibox/ts");
+            mqttclient.subscribe("/Medibox/tu");
+            mqttclient.subscribe("/Medibox/servo_angle");
         }
         else
         {
@@ -840,27 +883,63 @@ void connectToMQTT()
 
 void mqttCallback(char *topic, byte *payload, unsigned int length)
 {
+    Serial.print("Message received on topic: ");
+    Serial.println(topic);
+
     String msg;
-    for (int i = 0; i < length; i++)
+    for (unsigned int i = 0; i < length; i++)
     {
         msg += (char)payload[i];
     }
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("]: ");
+    Serial.print("Payload: ");
     Serial.println(msg);
+
+    float val = msg.toFloat();
+
+    if (strcmp(topic, "/Medibox/ts") == 0)
+    {
+        ts = max(1, (int)val);
+        Serial.print("Updated ts: ");
+        Serial.println(ts);
+    }
+    else if (strcmp(topic, "/Medibox/tu") == 0)
+    {
+        tu = max(5, (int)val);
+        Serial.print("Updated tu: ");
+        Serial.println(tu);
+    }
+    else if (strcmp(topic, "/Medibox/servo_angle") == 0)
+    {
+        int angle = constrain((int)val, 0, 180);
+        servo.write(angle);
+        Serial.print("Servo angle set to: ");
+        Serial.println(angle);
+    }
 }
 
 void publishData(float temperature, float humidity)
 {
+    if (sampleCount == 0)
+    {
+        Serial.println("Skipping send: no LDR samples collected.");
+        return;
+    }
+
+    float avgIntensity = lightSum / sampleCount;
+
+    lightSum = 0;
+    sampleCount = 0;
+
+    // computeServoAngle(avgIntensity, temperature);
+
     JsonDocument doc;
 
     doc["temperature"] = temperature;
     doc["humidity"] = humidity;
-    doc["ldr"] = analogRead(LDR);
+    doc["intensity"] = avgIntensity;
 
-    String jsonString;
+    char jsonString[200];
     serializeJson(doc, jsonString);
     Serial.println(jsonString);
-    mqttclient.publish("medibox/sensor_data", jsonString.c_str());
+    mqttclient.publish("medibox/sensor_data", jsonString);
 }

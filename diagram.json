@@ -46,8 +46,8 @@
         {
             "type": "wokwi-dht22",
             "id": "dht1",
-            "top": -306.9,
-            "left": -82.2,
+            "top": -364.5,
+            "left": -159,
             "attrs": {}
         },
         {
@@ -227,6 +227,14 @@
             "attrs": {
                 "value": "1000"
             }
+        },
+        {
+            "type": "wokwi-servo",
+            "id": "servo2",
+            "top": -346.6,
+            "left": 69,
+            "rotate": 270,
+            "attrs": {}
         }
     ],
     "connections": [
@@ -1287,6 +1295,34 @@
             "red",
             [
                 "h0"
+            ]
+        ],
+        [
+            "servo2:V+",
+            "bb4:tp.1",
+            "red",
+            [
+                "h0.1",
+                "v58.4"
+            ]
+        ],
+        [
+            "servo2:GND",
+            "bb4:tn.1",
+            "black",
+            [
+                "v38.4",
+                "h-28.9"
+            ]
+        ],
+        [
+            "servo2:PWM",
+            "esp:14",
+            "cyan",
+            [
+                "v-19.2",
+                "h-393.4",
+                "v345.6"
             ]
         ]
     ],
