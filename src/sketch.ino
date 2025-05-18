@@ -29,9 +29,9 @@
 #define DHTPIN 12
 
 #define LDR 33
-#define SERVO 14
+#define SERVO 13
 
-#define MQTT_SERVER "test.mosquitto.org"
+#define MQTT_SERVER "broker.hivemq.com"
 #define MQTT_PORT 1883
 
 // Declare Objects
@@ -44,6 +44,7 @@ PubSubClient mqttclient(espClient);
 
 // Function Declarations
 void print_line(String text, int column, int row, int text_size);
+void print_line_centered(String text, int row, int text_size);
 void print_time_now(void);
 void update_time(void);
 void ring_alarm(void);
@@ -56,9 +57,13 @@ void run_mode(int mode);
 void view_active_alarms();
 void delete_alarm();
 void enable_disable_alarms();
+
 void mqttCallback(char *topic, byte *payload, unsigned int length);
 void connectToMQTT();
 void publishData(float temperature, float humidity);
+void sampleLDR();
+void computeServoAngle(float lightValue);
+// TempHum check_temp(); // Removed duplicate declaration to fix overloading error
 
 // Global Variables
 int days = 0;
@@ -100,6 +105,10 @@ int sampleCount = 0;
 int ts = 5;  // sampling interval (in seconds)
 int tu = 10; // sending interval (in seconds)
 
+float thetaOfset = 30;
+float gammaValue = 0.75;
+float Tmed = 30.0;
+
 int current_mode = 0;
 int max_modes = 6;
 String modes[] = {"1- \nSet Time \nZone", "2- \nSet Alarm 1", "3- \nSet Alarm 2", "4- \nEnable/\nDisable \nAlarms", "5- \nView \nActive \nAlarms", "6- \nDelete \nAlarms"};
@@ -126,7 +135,7 @@ void setup()
     dhtSensor.setup(DHTPIN, DHTesp::DHT22);
     servo.attach(SERVO);
 
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
@@ -174,7 +183,6 @@ void setup()
 
 void loop()
 {
-    // put your main code here, to run repeatedly:
 
     if (!mqttclient.connected())
     {
@@ -839,6 +847,11 @@ TempHum check_temp()
     TempHum result;
     result.temperature = data.temperature;
     result.humidity = data.humidity;
+
+    // Update servo angle with latest intensity and temperature
+    float avgIntensity = (sampleCount > 0) ? (lightSum / sampleCount) : 0.0;
+    computeServoAngle(avgIntensity, result.temperature);
+
     return result;
 }
 
@@ -847,10 +860,37 @@ TempHum check_temp()
 //
 void sampleLDR()
 {
-    int raw = analogRead(LDR);        // 0 - 4095
+    int raw = analogRead(LDR);                // 0 - 4095
     float norm = 1.0 - ((float)raw / 4095.0); // normalize to 0 - 1
     lightSum += norm;
     sampleCount++;
+
+    // Update servo angle with latest intensity and temperature
+    float avgIntensity = (sampleCount > 0) ? (lightSum / sampleCount) : 0.0;
+    TempHum th = check_temp();
+    computeServoAngle(avgIntensity, th.temperature);
+}
+
+//
+// Servo Functions
+//
+void computeServoAngle(float intensity, float temperature)
+{
+
+    float T = temperature;
+    if (isnan(T))
+    {
+        Serial.println("Temperature read error");
+        return;
+    }
+
+    float lnRatio = log((float)ts / (float)tu); // natural log
+    float theta = thetaOfset + (180.0 - thetaOfset) * intensity * gammaValue * lnRatio * (T / Tmed);
+    theta = constrain(theta, 0, 180);
+
+    servo.write((int)theta);
+    Serial.print("Servo angle: ");
+    Serial.println(theta);
 }
 
 //
@@ -861,12 +901,15 @@ void connectToMQTT()
     while (!mqttclient.connected())
     {
         Serial.print("Attempting MQTT connection...");
-        if (mqttclient.connect("ESP32Client-123456"))
+        String clientId = "ESP32Client-" + String(random(0, 1000));
+        if (mqttclient.connect(clientId.c_str()))
         {
             Serial.println("connected");
             mqttclient.subscribe("/Medibox/ts");
             mqttclient.subscribe("/Medibox/tu");
-            mqttclient.subscribe("/Medibox/servo_angle");
+            mqttclient.subscribe("/Medibox/gammaValue");
+            mqttclient.subscribe("/Medibox/thetaOfset");
+            mqttclient.subscribe("/Medibox/Tmed");
         }
         else
         {
@@ -892,24 +935,45 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
 
     float val = msg.toFloat();
 
+    bool servoParamChanged = false;
+
     if (strcmp(topic, "/Medibox/ts") == 0)
     {
-        ts = max(1, (int)val);
-        Serial.print("Updated ts: ");
+        ts = max(1, (int)val); // Prevent 0
+        Serial.print("ts updated: ");
         Serial.println(ts);
+        servoParamChanged = true;
     }
     else if (strcmp(topic, "/Medibox/tu") == 0)
     {
-        tu = max(5, (int)val);
-        Serial.print("Updated tu: ");
+        tu = max(5, (int)val); // Prevent too low
+        Serial.print("tu updated: ");
         Serial.println(tu);
+        servoParamChanged = true;
     }
-    else if (strcmp(topic, "/Medibox/servo_angle") == 0)
+    else if (strcmp(topic, "/Medibox/thetaOfset") == 0)
     {
-        int angle = constrain((int)val, 0, 180);
-        servo.write(angle);
-        Serial.print("Servo angle set to: ");
-        Serial.println(angle);
+        thetaOfset = constrain(val, 0, 120);
+        servoParamChanged = true;
+    }
+    else if (strcmp(topic, "/Medibox/gammaValue") == 0)
+    {
+        gammaValue = constrain(val, 0.0, 1.0);
+        servoParamChanged = true;
+    }
+    else if (strcmp(topic, "/Medibox/Tmed") == 0)
+    {
+        Tmed = constrain(val, 10.0, 40.0);
+        servoParamChanged = true;
+    }
+
+    // If any servo parameter changed, recompute and set servo angle
+    if (servoParamChanged) {
+        // Use the latest available LDR average (or 0 if no samples yet)
+        float avgIntensity = (sampleCount > 0) ? (lightSum / sampleCount) : 0.0;
+        // Use the latest temperature reading
+        TempHum th = check_temp();
+        computeServoAngle(avgIntensity, th.temperature);
     }
 }
 
@@ -926,7 +990,7 @@ void publishData(float temperature, float humidity)
     lightSum = 0;
     sampleCount = 0;
 
-    // computeServoAngle(avgIntensity, temperature);
+    computeServoAngle(avgIntensity, temperature);
 
     JsonDocument doc;
 
