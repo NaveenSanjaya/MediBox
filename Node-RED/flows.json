@@ -26,8 +26,8 @@
         "max": "60",
         "step": 1,
         "className": "",
-        "x": 350,
-        "y": 440,
+        "x": 150,
+        "y": 540,
         "wires": [
             [
                 "a8c6e8cc993b8df4"
@@ -53,8 +53,8 @@
         "max": "300",
         "step": 1,
         "className": "",
-        "x": 340,
-        "y": 520,
+        "x": 140,
+        "y": 620,
         "wires": [
             [
                 "b5e67db35ec08599"
@@ -169,8 +169,8 @@
         "correl": "",
         "expiry": "",
         "broker": "bd1ee9b8e875252e",
-        "x": 650,
-        "y": 440,
+        "x": 450,
+        "y": 540,
         "wires": []
     },
     {
@@ -192,8 +192,8 @@
         "max": "120",
         "step": 1,
         "className": "",
-        "x": 350,
-        "y": 600,
+        "x": 150,
+        "y": 700,
         "wires": [
             [
                 "c408abdb7d29c659"
@@ -219,8 +219,8 @@
         "max": "1.0",
         "step": "0.01",
         "className": "",
-        "x": 340,
-        "y": 680,
+        "x": 140,
+        "y": 780,
         "wires": [
             [
                 "132cc57ba6a8fe62"
@@ -246,8 +246,8 @@
         "max": "40",
         "step": 1,
         "className": "",
-        "x": 350,
-        "y": 760,
+        "x": 150,
+        "y": 860,
         "wires": [
             [
                 "c289dcdcdb9084ad"
@@ -458,8 +458,8 @@
         "correl": "",
         "expiry": "",
         "broker": "bd1ee9b8e875252e",
-        "x": 650,
-        "y": 520,
+        "x": 450,
+        "y": 620,
         "wires": []
     },
     {
@@ -476,8 +476,8 @@
         "correl": "",
         "expiry": "",
         "broker": "bd1ee9b8e875252e",
-        "x": 650,
-        "y": 600,
+        "x": 450,
+        "y": 700,
         "wires": []
     },
     {
@@ -494,8 +494,8 @@
         "correl": "",
         "expiry": "",
         "broker": "bd1ee9b8e875252e",
-        "x": 650,
-        "y": 680,
+        "x": 450,
+        "y": 780,
         "wires": []
     },
     {
@@ -512,8 +512,46 @@
         "correl": "",
         "expiry": "",
         "broker": "bd1ee9b8e875252e",
-        "x": 650,
-        "y": 760,
+        "x": 450,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "87bbbf0d862ce9f3",
+        "type": "mqtt in",
+        "z": "e4e49d874b2570e4",
+        "name": "MQTT IN",
+        "topic": "/Medibox/params",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "bd1ee9b8e875252e",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 160,
+        "y": 360,
+        "wires": [
+            [
+                "082440b0f5e73443"
+            ]
+        ]
+    },
+    {
+        "id": "082440b0f5e73443",
+        "type": "debug",
+        "z": "e4e49d874b2570e4",
+        "name": "Initial Servo Params",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 380,
+        "y": 260,
         "wires": []
     },
     {

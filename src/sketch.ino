@@ -62,8 +62,7 @@ void mqttCallback(char *topic, byte *payload, unsigned int length);
 void connectToMQTT();
 void publishData(float temperature, float humidity);
 void sampleLDR();
-void computeServoAngle(float lightValue);
-// TempHum check_temp(); // Removed duplicate declaration to fix overloading error
+void computeServoAngle(float lightValue, float temperature);
 
 // Global Variables
 int days = 0;
@@ -101,6 +100,9 @@ unsigned long lastSendTime = 0;
 
 float lightSum = 0;
 int sampleCount = 0;
+
+float latestTemperature = 0.0;
+float latestIntensity = 0.0;
 
 int ts = 5;  // sampling interval (in seconds)
 int tu = 10; // sending interval (in seconds)
@@ -210,6 +212,8 @@ void loop()
 
     if (now - lastSendTime >= tu * 1000)
     {
+        // Update servo angle only once per send cycle, with latest values
+        computeServoAngle(latestIntensity, latestTemperature);
         publishData(th.temperature, th.humidity);
         lastSendTime = now;
     }
@@ -848,9 +852,8 @@ TempHum check_temp()
     result.temperature = data.temperature;
     result.humidity = data.humidity;
 
-    // Update servo angle with latest intensity and temperature
-    float avgIntensity = (sampleCount > 0) ? (lightSum / sampleCount) : 0.0;
-    computeServoAngle(avgIntensity, result.temperature);
+    // Update latestTemperature
+    latestTemperature = data.temperature;
 
     return result;
 }
@@ -864,11 +867,8 @@ void sampleLDR()
     float norm = 1.0 - ((float)raw / 4095.0); // normalize to 0 - 1
     lightSum += norm;
     sampleCount++;
-
-    // Update servo angle with latest intensity and temperature
-    float avgIntensity = (sampleCount > 0) ? (lightSum / sampleCount) : 0.0;
-    TempHum th = check_temp();
-    computeServoAngle(avgIntensity, th.temperature);
+    // Update latestIntensity with the new average
+    latestIntensity = (sampleCount > 0) ? (lightSum / sampleCount) : 0.0;
 }
 
 //
@@ -910,6 +910,18 @@ void connectToMQTT()
             mqttclient.subscribe("/Medibox/gammaValue");
             mqttclient.subscribe("/Medibox/thetaOfset");
             mqttclient.subscribe("/Medibox/Tmed");
+
+            // Publish initial values as a single JSON object to dashboard
+            JsonDocument doc;
+            doc["ts"] = ts;
+            doc["tu"] = tu;
+            doc["gammaValue"] = gammaValue;
+            doc["thetaOfset"] = thetaOfset;
+            doc["Tmed"] = Tmed;
+            char jsonString[200];
+            serializeJson(doc, jsonString);
+            Serial.println(jsonString);
+            mqttclient.publish("/Medibox/params", jsonString);
         }
         else
         {
@@ -989,8 +1001,6 @@ void publishData(float temperature, float humidity)
 
     lightSum = 0;
     sampleCount = 0;
-
-    computeServoAngle(avgIntensity, temperature);
 
     JsonDocument doc;
 
