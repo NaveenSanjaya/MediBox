@@ -18,7 +18,7 @@
         "order": 3,
         "width": 0,
         "height": 0,
-        "passthru": true,
+        "passthru": false,
         "outs": "end",
         "topic": "/Medibox/ts",
         "topicType": "msg",
@@ -26,11 +26,11 @@
         "max": "60",
         "step": 1,
         "className": "",
-        "x": 430,
-        "y": 460,
+        "x": 350,
+        "y": 440,
         "wires": [
             [
-                "898846893a951671"
+                "a8c6e8cc993b8df4"
             ]
         ]
     },
@@ -45,7 +45,7 @@
         "order": 4,
         "width": 0,
         "height": 0,
-        "passthru": true,
+        "passthru": false,
         "outs": "end",
         "topic": "/Medibox/tu",
         "topicType": "msg",
@@ -53,11 +53,11 @@
         "max": "300",
         "step": 1,
         "className": "",
-        "x": 420,
+        "x": 340,
         "y": 520,
         "wires": [
             [
-                "525e04c13155afaf"
+                "b5e67db35ec08599"
             ]
         ]
     },
@@ -151,8 +151,7 @@
         "wires": [
             [
                 "6ec1929ed6c77e2d",
-                "01d6aee09d39865c",
-                "213b58037a1d3a43"
+                "01d6aee09d39865c"
             ]
         ]
     },
@@ -160,8 +159,8 @@
         "id": "a8c6e8cc993b8df4",
         "type": "mqtt out",
         "z": "e4e49d874b2570e4",
-        "name": "",
-        "topic": "",
+        "name": "MQTT OUT",
+        "topic": "/Medibox/ts",
         "qos": "",
         "retain": "",
         "respTopic": "",
@@ -170,8 +169,8 @@
         "correl": "",
         "expiry": "",
         "broker": "bd1ee9b8e875252e",
-        "x": 1170,
-        "y": 460,
+        "x": 650,
+        "y": 440,
         "wires": []
     },
     {
@@ -185,19 +184,19 @@
         "order": 1,
         "width": 0,
         "height": 0,
-        "passthru": true,
+        "passthru": false,
         "outs": "end",
-        "topic": "/Medibox/thetaoffset",
+        "topic": "/Medibox/thetaOfset",
         "topicType": "msg",
         "min": "0",
         "max": "120",
         "step": 1,
         "className": "",
-        "x": 150,
-        "y": 740,
+        "x": 350,
+        "y": 600,
         "wires": [
             [
-                "f5e544f3f7e75545"
+                "c408abdb7d29c659"
             ]
         ]
     },
@@ -212,19 +211,19 @@
         "order": 3,
         "width": 0,
         "height": 0,
-        "passthru": true,
+        "passthru": false,
         "outs": "end",
-        "topic": "/Medibox/gamma",
+        "topic": "/Medibox/gammaValue",
         "topicType": "msg",
         "min": "0.0",
         "max": "1.0",
         "step": "0.01",
         "className": "",
-        "x": 140,
-        "y": 820,
+        "x": 340,
+        "y": 680,
         "wires": [
             [
-                "fcbb35daf2d1030a"
+                "132cc57ba6a8fe62"
             ]
         ]
     },
@@ -239,7 +238,7 @@
         "order": 5,
         "width": 0,
         "height": 0,
-        "passthru": true,
+        "passthru": false,
         "outs": "end",
         "topic": "/Medibox/Tmed",
         "topicType": "msg",
@@ -247,11 +246,11 @@
         "max": "40",
         "step": 1,
         "className": "",
-        "x": 150,
-        "y": 900,
+        "x": 350,
+        "y": 760,
         "wires": [
             [
-                "a9ef12864348c65a"
+                "c289dcdcdb9084ad"
             ]
         ]
     },
@@ -446,256 +445,76 @@
         ]
     },
     {
-        "id": "c7a15c2b82dc3d34",
-        "type": "function",
+        "id": "b5e67db35ec08599",
+        "type": "mqtt out",
         "z": "e4e49d874b2570e4",
-        "name": "servoAngle",
-        "func": "// Get current values\nlet I = Number(flow.get(\"intensity\")) || 0;\nlet T = Number(flow.get(\"temperature\")) || 25;\nlet thetaoffset = Number(flow.get(\"thetaoffset\")) || 30;\nlet gamma = Number(flow.get(\"gamma\")) || 0.75;\nlet Tmed = Number(flow.get(\"Tmed\")) || 30;\nlet ts = Number(flow.get(\"ts\")) || 5;\nlet tu = Number(flow.get(\"tu\")) || 120;\n\n// Ensure safe values\nts = Math.max(1, ts);\ntu = Math.max(1, tu);\nTmed = Tmed === 0 ? 1 : Tmed;\n\n// Calculate angle\nlet lnRatio = Math.log(ts / tu);\nlet theta = thetaoffset + (180 - thetaoffset) * I * gamma * lnRatio * (T / Tmed);\ntheta = Math.max(0, Math.min(180, theta));\n\n// Get last sent angle\nlet lastTheta = flow.get(\"lastTheta\") || -1;\n\n// Only send if angle changed significantly (e.g., > 1 degree)\nif (Math.abs(theta - lastTheta) >= 1) {\n    flow.set(\"lastTheta\", theta);\n    return {\n        topic: \"/Medibox/servo_angle\",\n        payload: theta\n    };\n}\n\n// Otherwise, do not send anything\nreturn null;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 790,
-        "y": 760,
-        "wires": [
-            [
-                "a8c6e8cc993b8df4",
-                "1d6d0b8456efa49d",
-                "49a0830200a7ebd7"
-            ]
-        ]
-    },
-    {
-        "id": "213b58037a1d3a43",
-        "type": "function",
-        "z": "e4e49d874b2570e4",
-        "name": "envVariables",
-        "func": "flow.set(\"intensity\", msg.payload.intensity);\nflow.set(\"temperature\", msg.payload.temperature);\nreturn msg;\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 330,
-        "y": 620,
-        "wires": [
-            [
-                "c7a15c2b82dc3d34"
-            ]
-        ]
-    },
-    {
-        "id": "1d6d0b8456efa49d",
-        "type": "debug",
-        "z": "e4e49d874b2570e4",
-        "name": "Angle",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1030,
-        "y": 760,
+        "name": "MQTT OUT",
+        "topic": "/Medibox/tu",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "bd1ee9b8e875252e",
+        "x": 650,
+        "y": 520,
         "wires": []
     },
     {
-        "id": "8ded0250db072aca",
-        "type": "ui_text_input",
+        "id": "c408abdb7d29c659",
+        "type": "mqtt out",
         "z": "e4e49d874b2570e4",
-        "name": "",
-        "label": "Servo Angle",
-        "tooltip": "",
-        "group": "servoGroup",
-        "order": 8,
-        "width": 0,
-        "height": 0,
-        "passthru": true,
-        "mode": "text",
-        "delay": 300,
-        "topic": "payload",
-        "sendOnBlur": true,
-        "className": "",
-        "topicType": "msg",
-        "x": 1190,
-        "y": 860,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "49a0830200a7ebd7",
-        "type": "change",
-        "z": "e4e49d874b2570e4",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "angle",
-                "pt": "msg",
-                "to": "",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 980,
-        "y": 860,
-        "wires": [
-            [
-                "8ded0250db072aca"
-            ]
-        ]
-    },
-    {
-        "id": "f5e544f3f7e75545",
-        "type": "function",
-        "z": "e4e49d874b2570e4",
-        "name": "thetaOffset",
-        "func": "flow.set(\"thetaoffset\", msg.payload);\nreturn { payload: \"\" };\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 370,
-        "y": 740,
-        "wires": [
-            [
-                "c7a15c2b82dc3d34"
-            ]
-        ]
-    },
-    {
-        "id": "a9ef12864348c65a",
-        "type": "function",
-        "z": "e4e49d874b2570e4",
-        "name": "tMed",
-        "func": "flow.set(\"Tmed\", msg.payload);\nreturn { payload: \"\" };\n\n\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 350,
-        "y": 900,
-        "wires": [
-            [
-                "c7a15c2b82dc3d34"
-            ]
-        ]
-    },
-    {
-        "id": "fcbb35daf2d1030a",
-        "type": "function",
-        "z": "e4e49d874b2570e4",
-        "name": "gamma",
-        "func": "flow.set(\"gamma\", msg.payload);\nreturn { payload: \"\" };\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 360,
-        "y": 820,
-        "wires": [
-            [
-                "c7a15c2b82dc3d34"
-            ]
-        ]
-    },
-    {
-        "id": "898846893a951671",
-        "type": "function",
-        "z": "e4e49d874b2570e4",
-        "name": "ts",
-        "func": "flow.set(\"ts\", msg.payload);\nreturn {\n    topic: \"/Medibox/ts\",\n    payload: msg.payload\n};\n\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
+        "name": "MQTT OUT",
+        "topic": "/Medibox/thetaOfset",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "bd1ee9b8e875252e",
         "x": 650,
-        "y": 460,
-        "wires": [
-            [
-                "c7a15c2b82dc3d34",
-                "3dcd38db802c38a6"
-            ]
-        ]
+        "y": 600,
+        "wires": []
     },
     {
-        "id": "525e04c13155afaf",
-        "type": "function",
+        "id": "132cc57ba6a8fe62",
+        "type": "mqtt out",
         "z": "e4e49d874b2570e4",
-        "name": "tu",
-        "func": "flow.set(\"tu\", msg.payload);\nreturn {\n    topic: \"/Medibox/tu\",\n    payload: msg.payload\n};\n",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
+        "name": "MQTT OUT",
+        "topic": "/Medibox/gammaValue",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "bd1ee9b8e875252e",
         "x": 650,
-        "y": 520,
-        "wires": [
-            [
-                "c7a15c2b82dc3d34",
-                "4eb9633daa708f6a"
-            ]
-        ]
+        "y": 680,
+        "wires": []
     },
     {
-        "id": "3dcd38db802c38a6",
-        "type": "rbe",
+        "id": "c289dcdcdb9084ad",
+        "type": "mqtt out",
         "z": "e4e49d874b2570e4",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": true,
-        "property": "payload",
-        "topi": "topic",
-        "x": 890,
-        "y": 440,
-        "wires": [
-            [
-                "a8c6e8cc993b8df4"
-            ]
-        ]
-    },
-    {
-        "id": "4eb9633daa708f6a",
-        "type": "rbe",
-        "z": "e4e49d874b2570e4",
-        "name": "",
-        "func": "rbe",
-        "gap": "",
-        "start": "",
-        "inout": "out",
-        "septopics": true,
-        "property": "payload",
-        "topi": "topic",
-        "x": 890,
-        "y": 520,
-        "wires": [
-            [
-                "a8c6e8cc993b8df4"
-            ]
-        ]
+        "name": "MQTT OUT",
+        "topic": "/Medibox/Tmed",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "bd1ee9b8e875252e",
+        "x": 650,
+        "y": 760,
+        "wires": []
     },
     {
         "id": "8f35fc23627ec2a8",
@@ -771,8 +590,8 @@
     {
         "id": "bd1ee9b8e875252e",
         "type": "mqtt-broker",
-        "name": "Mosquitto Server",
-        "broker": "test.mosquitto.org",
+        "name": "MQTT Broker",
+        "broker": "broker.hivemq.com",
         "port": 1883,
         "clientid": "",
         "autoConnect": true,
